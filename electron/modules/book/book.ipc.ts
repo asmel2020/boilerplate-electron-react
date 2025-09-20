@@ -1,14 +1,24 @@
-import { IpcMain } from "electron";
-import { consultBookLink, findAllBook } from "./book.services";
+import { BrowserWindow, IpcMain } from "electron";
+import {
+  consultBookLink,
+  findAllBook,
+  downloadBook,
+  redownloadBook,
+} from "./book.services";
 
-export const BookConsultIpcHandlers = (ipcMain: IpcMain) => {
+export const BookIpcHandlers = (ipcMain: IpcMain, _: BrowserWindow | null) => {
   ipcMain.handle("book:consult", async (_, link: string) => {
     return await consultBookLink(link);
   });
-};
 
-export const BookFindAllIpcHandlers = (ipcMain: IpcMain) => {
   ipcMain.handle("book:findAll", async () => {
     return await findAllBook();
+  });
+
+  ipcMain.handle("book:download", async (_, id: string) => {
+    return downloadBook(id);
+  });
+  ipcMain.handle("book:redownload", async (_, id: string) => {
+    return redownloadBook(id);
   });
 };

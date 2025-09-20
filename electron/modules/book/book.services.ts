@@ -3,6 +3,8 @@ import * as cheerio from "cheerio";
 import axios from "axios";
 
 import { prisma } from "../../prisma/prismaClient";
+import * as fs from "fs";
+import { getPath } from "../../utils/storage";
 
 // Recibir usuario desde el frontend
 
@@ -159,4 +161,123 @@ export const findAllBook = async () => {
     },
   });
   return books;
+};
+
+export const downloadBook = async (id: string) => {
+  const capitulos = await prisma.capitulo.findMany({
+    where: {
+      bookId: id,
+      isDownloaded: false,
+    },
+    select: {
+      id: true,
+      urlExternal: true,
+      titulo: true,
+      book: {
+        select: {
+          titulo: true,
+        },
+      },
+    },
+  });
+
+  for (const capitulo of capitulos) {
+    try {
+      const { data: html } = await axios.get(capitulo.urlExternal);
+      const $ = cheerio.load(html);
+
+      // 1. Extraer solo el contenido de #nr1
+      let content = $("#nr1").html() || "";
+
+      // 2. Quitar <script>, <style>, <span> y otros bloques no deseados
+      $("#nr1 script, #nr1 style, #nr1 span, #nr1 div").remove();
+      content = $("#nr1").html() || "";
+
+      // 3. Reemplazar <br> por saltos de línea
+      content = content.replace(/<br\s*\/?>/gi, "\n\n");
+
+      // 4. Eliminar etiquetas HTML restantes y limpiar espacios
+      content = content.replace(/<\/?[^>]+(>|$)/g, "");
+      content = content.replace(/\n{3,}/g, "\n\n").trim();
+      let folderName = `${getPath()}/${capitulo.book.titulo}`;
+      // 5. Guardar como .md
+      if (!fs.existsSync(folderName)) {
+        fs.mkdirSync(folderName, { recursive: true });
+      }
+
+      fs.writeFileSync(`${folderName}/${capitulo.titulo}.md`, content, "utf8");
+      await prisma.capitulo.update({
+        where: {
+          id: capitulo.id,
+        },
+        data: {
+          isDownloaded: true,
+        },
+      });
+      console.log(`✅ Archivo ${capitulo.titulo}.md generado!`);
+    } catch (error) {
+      console.error("Error al descargar el libro:", error);
+    }
+  }
+
+  return true;
+};
+
+export const redownloadBook = async (id: string) => {
+  const capitulos = await prisma.capitulo.updateManyAndReturn({
+    where: {
+      bookId: id,
+    },
+    data: {
+      isDownloaded: false,
+    },
+    include: {
+      book: {
+        select: {
+          titulo: true,
+        },
+      },
+    },
+  });
+
+  for (const capitulo of capitulos) {
+    try {
+      const { data: html } = await axios.get(capitulo.urlExternal);
+      const $ = cheerio.load(html);
+
+      // 1. Extraer solo el contenido de #nr1
+      let content = $("#nr1").html() || "";
+
+      // 2. Quitar <script>, <style>, <span> y otros bloques no deseados
+      $("#nr1 script, #nr1 style, #nr1 span, #nr1 div").remove();
+      content = $("#nr1").html() || "";
+
+      // 3. Reemplazar <br> por saltos de línea
+      content = content.replace(/<br\s*\/?>/gi, "\n\n");
+
+      // 4. Eliminar etiquetas HTML restantes y limpiar espacios
+      content = content.replace(/<\/?[^>]+(>|$)/g, "");
+      content = content.replace(/\n{3,}/g, "\n\n").trim();
+      let folderName = `${getPath()}/${capitulo.book.titulo}`;
+      // 5. Guardar como .md
+      if (!fs.existsSync(folderName)) {
+        fs.mkdirSync(folderName, { recursive: true });
+      }
+
+      fs.writeFileSync(`${folderName}/${capitulo.titulo}.md`, content, "utf8");
+      await prisma.capitulo.update({
+        where: {
+          id: capitulo.id,
+        },
+        data: {
+          isDownloaded: true,
+        },
+      });
+      console.log(`✅ Archivo ${capitulo.titulo}.md generado!`);
+    } catch (error) {
+      console.error("Error al descargar el libro:", error);
+    }
+  }
+
+  return true;
 };

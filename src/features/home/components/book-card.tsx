@@ -10,11 +10,12 @@ interface BookCardProps {
   book: Book;
 
   onViewDetails?: (book: Book) => void;
+  onDownload?: (book: Book) => void;
 }
 
 export function BookCard({
   book,
-
+  onDownload = () => {},
   onViewDetails = () => {},
 }: BookCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -56,6 +57,14 @@ export function BookCard({
             <Badge variant="secondary" className="text-xs">
               {book.genre}
             </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onDownload(book)}
+              className="text-xs px-3"
+            >
+              Descargar
+            </Button>
             <Button
               variant="outline"
               size="sm"

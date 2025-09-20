@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -79,14 +79,33 @@ app.on("window-all-closed", () => {
 app.on("activate", () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  registerIpcHandlers();
+  registerIpcHandlers(win);
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
-    /*     registerIpcHandlers(); */
   }
 });
 
 app.whenReady().then(() => {
   createWindow();
-  registerIpcHandlers();
+  registerIpcHandlers(win);
+});
+
+// Manejar petición desde renderer
+ipcMain.handle("save-file", async (_, data) => {
+  const { canceled, filePath } = await dialog.showSaveDialog(win as any, {
+    title: "Guardar archivo",
+    defaultPath: "mis-datos.json", // nombre por defecto
+    filters: [{ name: "JSON", extensions: ["json"] }],
+  });
+
+  return canceled ? null : filePath; // ⚡ aquí solo devuelves la ruta
+});
+
+ipcMain.handle("choose-folder", async (event) => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(win as any, {
+    title: "Elige una carpeta",
+    properties: ["openDirectory"],
+  });
+
+  return canceled ? null : filePaths[0]; // ⚡ devuelve solo la carpeta elegida
 });

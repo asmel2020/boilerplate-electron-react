@@ -70,7 +70,7 @@ export function AddBookDialog({
     setIsValidated(false);
 
     try {
-      const data = await window.api.consultBook(url);
+      const data = await window.api.book.consultBook(url);
 
       setBookInfo({
         author: data.autor,
