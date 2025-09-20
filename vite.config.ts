@@ -4,44 +4,48 @@ import electron from "vite-plugin-electron/simple";
 import react from "@vitejs/plugin-react";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import tailwindcss from "@tailwindcss/vite";
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    // Este plugin debe ir antes del de React
     tanstackRouter({
       target: "react",
       routesDirectory: "./src/routes",
       generatedRouteTree: "./src/routes/routeTree.gen.ts",
       autoCodeSplitting: false,
-      // Ignora rutas virtuales como sitemap~*, /@react-refresh/, client.mjs, etc.
-      routeFileIgnorePrefix: "-", // Línea recomendada
+      routeFileIgnorePrefix: "-",
       routeFileIgnorePattern: [
-        "^~", // cualquier archivo virtual que empiece por "~"
+        "^~",
         "@react-refresh",
         "/vite/client",
         "\\.mjs$",
       ].join("|"),
-      // Puedes ajustar o ampliar este regex según tus rutas problemáticas
     }),
     react(),
     electron({
       main: {
-        // Shortcut of `build.lib.entry`.
         entry: "electron/main.ts",
+        vite: {
+          build: {
+            rollupOptions: {
+              // 👇 Evita que Prisma se bundlee en el main
+              external: [
+                "@prisma/client",
+                ".prisma/client",
+                "@libsql/client",
+                "@libsql/windows-x64-msvc", // 👈 importante
+                "@libsql/linux-x64-gnu",
+                "@libsql/darwin-x64",
+                "@libsql/darwin-arm64",
+              ],
+            },
+          },
+        },
       },
       preload: {
-        // Shortcut of `build.rollupOptions.input`.
-        // Preload scripts may contain Web assets, so use the `build.rollupOptions.input` instead `build.lib.entry`.
         input: path.join(__dirname, "electron/preload.ts"),
       },
-      // Ployfill the Electron and Node.js API for Renderer process.
-      // If you want use Node.js in Renderer process, the `nodeIntegration` needs to be enabled in the Main process.
-      // See 👉 https://github.com/electron-vite/vite-plugin-electron-renderer
-      renderer:
-        process.env.NODE_ENV === "test"
-          ? // https://github.com/electron-vite/vite-plugin-electron-renderer/issues/78#issuecomment-2053600808
-            undefined
-          : {},
+      renderer: process.env.NODE_ENV === "test" ? undefined : {},
     }),
     tailwindcss(),
   ],
@@ -56,5 +60,9 @@ export default defineConfig({
         entryFileNames: `[name].cjs`,
       },
     },
+  },
+  optimizeDeps: {
+    // 👇 Evita que Vite intente prebundlear Prisma en desarrollo
+    exclude: ["@prisma/client", ".prisma/client"],
   },
 });

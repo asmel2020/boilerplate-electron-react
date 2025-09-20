@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { env } from "../src/config/env";
 import registerIpcHandlers from "./ipc";
-import { tiktokConnect } from "./modules/tiktok/tiktok.services";
+import { initPrisma } from "./prisma/prismaClient";
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -31,7 +31,8 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 
 let win: BrowserWindow | null;
 
-function createWindow() {
+async function createWindow() {
+  await initPrisma();
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     width: 1080,

@@ -4,7 +4,7 @@ const modeSchema = z.enum(["development", "test", "production"]);
 // 1. Definir esquema con Zod
 const envSchema = z.object({
   MODE: modeSchema, // Vite usa import.meta.env.MODE
-  VITE_BASE_URL: z.string(),
+  VITE_BASE_URL: z.string().default("http://localhost:3000"),
 });
 
 // 2. Parsear y validar las variables de entorno

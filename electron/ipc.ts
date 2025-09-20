@@ -1,10 +1,10 @@
 import { ipcMain } from "electron";
 import {
-  TiktokConnectIpcHandlers,
-  tiktokDisconnectIpcHandlers,
-} from "./modules/tiktok/tiktok.ipc";
+  BookConsultIpcHandlers,
+  BookFindAllIpcHandlers,
+} from "./modules/book/book.ipc";
 
 export default function registerIpcHandlers() {
-  TiktokConnectIpcHandlers(ipcMain);
-  tiktokDisconnectIpcHandlers(ipcMain);
+  BookConsultIpcHandlers(ipcMain);
+  BookFindAllIpcHandlers(ipcMain);
 }
