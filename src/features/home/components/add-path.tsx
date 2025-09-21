@@ -21,6 +21,8 @@ export function AddPathDialog({ isOpen, onClose }: Props) {
     const ruta = await window.api.common.chooseFolder();
     if (!ruta) return;
     setRuta(ruta);
+
+    onClose();
   };
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

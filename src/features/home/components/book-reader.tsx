@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 import { BookOpen } from "lucide-react";
-import { Book, Cap } from "@/types/book";
+import { Book } from "@/types/book";
 import { cn } from "@/lib/utils";
 import { useReadCapBook } from "@/hook/read-cap-book";
 

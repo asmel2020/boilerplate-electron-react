@@ -31,7 +31,6 @@ export function HomePage() {
   const handleDownload = async (book: Book) => {
     setSelectedBook(book);
     setIsDownloadBookDialogOpen(true);
-    /*   await window.api.book.downloadBook(id); */
   };
   const handleReadBook = (book: Book) => {
     setSelectedBook(book);
@@ -40,7 +39,14 @@ export function HomePage() {
   if (!getPathQuery.data || !findAllBookQuery.data) return <Loading />;
 
   if (!getPathQuery.data.path) {
-    return <AddPathDialog isOpen={true} onClose={() => {}} />;
+    return (
+      <AddPathDialog
+        isOpen={true}
+        onClose={async () => {
+          await getPathQuery.refetch();
+        }}
+      />
+    );
   }
   return (
     <div className="min-h-screen bg-gray-50 w-full">

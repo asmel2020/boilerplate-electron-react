@@ -1,5 +1,4 @@
 import { Search, BookX } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface EmptyStateProps {
   hasSearchTerm: boolean;

@@ -23,9 +23,9 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["./src/types/global"],
+
     "typeRoots": ["./node_modules/@types"]
   },
-  "include": ["src", "electron"],
+  "include": ["src", "electron", "./src/types/global"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

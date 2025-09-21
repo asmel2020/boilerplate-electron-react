@@ -4,9 +4,9 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { env } from "../src/config/env";
 import registerIpcHandlers from "./ipc";
-import { initPrisma } from "./prisma/prismaClient";
+
 import "./webSocket/server"; // importa el servidor y levanta io
-const require = createRequire(import.meta.url);
+createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // The built directory structure
@@ -32,7 +32,6 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 let win: BrowserWindow | null;
 
 async function createWindow() {
-  await initPrisma();
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, "logo.png"), // windows icon
     width: 1080,
@@ -92,7 +91,7 @@ app.whenReady().then(() => {
 });
 
 // Manejar petición desde renderer
-ipcMain.handle("save-file", async (_, data) => {
+ipcMain.handle("save-file", async (_) => {
   const { canceled, filePath } = await dialog.showSaveDialog(win as any, {
     title: "Guardar archivo",
     defaultPath: "mis-datos.json", // nombre por defecto
@@ -102,7 +101,7 @@ ipcMain.handle("save-file", async (_, data) => {
   return canceled ? null : filePath; // ⚡ aquí solo devuelves la ruta
 });
 
-ipcMain.handle("choose-folder", async (event) => {
+ipcMain.handle("choose-folder", async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog(win as any, {
     title: "Elige una carpeta",
     properties: ["openDirectory"],

@@ -30,8 +30,6 @@ export default defineConfig({
             rollupOptions: {
               // 👇 Evita que Prisma se bundlee en el main
               external: [
-                "@prisma/client",
-                ".prisma/client",
                 "@libsql/client",
                 "@libsql/windows-x64-msvc", // 👈 importante
                 "@libsql/linux-x64-gnu",
@@ -60,9 +58,5 @@ export default defineConfig({
         entryFileNames: `[name].cjs`,
       },
     },
-  },
-  optimizeDeps: {
-    // 👇 Evita que Vite intente prebundlear Prisma en desarrollo
-    exclude: ["@prisma/client", ".prisma/client"],
   },
 });

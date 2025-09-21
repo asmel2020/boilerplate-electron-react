@@ -2,10 +2,18 @@
 import * as cheerio from "cheerio";
 import axios from "axios";
 
-import { prisma } from "../../prisma/prismaClient";
 import * as fs from "fs";
 import { getPath } from "../../utils/storage";
 import { WsService } from "../../webSocket/wsService";
+
+import {
+  getBooks,
+  getCapituloById,
+  getCapitulosByBook,
+  markChapterAsDownloaded,
+  resetCapitulosDownloaded,
+  createBookWithAuthorAndChapters,
+} from "../../db/query";
 
 // Recibir usuario desde el frontend
 
@@ -80,52 +88,18 @@ export const consultBookLink = async (
         tituloAttr: $(el).attr("title"), // opcional
       });
     });
-    await prisma.book.create({
-      data: {
-        urlExternal: link,
-        portada,
-        titulo,
-
-        tipo,
-        estado,
-        ultimaActualizacion: ultimaActualizacion
-          ? new Date(ultimaActualizacion)
-          : null,
-        descripcion,
-        author: {
-          connectOrCreate: {
-            where: {
-              name: autor,
-            },
-            create: {
-              name: autor,
-              urlExternal: autors.url,
-            },
-          },
-        },
-        capitulos: {
-          createMany: {
-            data: capitulos,
-          },
-        },
-      },
+    await createBookWithAuthorAndChapters({
+      link,
+      portada,
+      titulo,
+      tipo,
+      estado,
+      ultimaActualizacion,
+      descripcion,
+      autor,
+      autors,
+      capitulos,
     });
-
-    /*  fs.writeFileSync(
-      "descripcion.json",
-      JSON.stringify({
-        url: link,
-        portada,
-        titulo,
-        autor,
-        tipo,
-        estado,
-        ultimaActualizacion,
-
-        descripcion,
-        capitulos,
-      })
-    ); */
 
     return {
       titulo,
@@ -139,49 +113,12 @@ export const consultBookLink = async (
 };
 
 export const findAllBook = async () => {
-  const books = await prisma.book.findMany({
-    include: {
-      author: {
-        select: {
-          name: true,
-          urlExternal: true,
-        },
-      },
-      capitulos: {
-        select: {
-          id: true,
-          capituloNum: true,
-          titulo: true,
-          urlExternal: true,
-          tituloAttr: true,
-          isDownloaded: true,
-        },
-        orderBy: {
-          capituloNum: "asc",
-        },
-      },
-    },
-  });
+  const books = getBooks();
   return books;
 };
 
 export const downloadBook = async (id: string) => {
-  const capitulos = await prisma.capitulo.findMany({
-    where: {
-      bookId: id,
-    },
-    select: {
-      id: true,
-      urlExternal: true,
-      titulo: true,
-      isDownloaded: true,
-      book: {
-        select: {
-          titulo: true,
-        },
-      },
-    },
-  });
+  const capitulos = await getCapitulosByBook(id);
   const capComplete = capitulos.filter((capitulo) => capitulo.isDownloaded);
   const capPending = capitulos.filter((capitulo) => !capitulo.isDownloaded);
   let downloadComplete = capComplete.length;
@@ -218,15 +155,8 @@ export const downloadBook = async (id: string) => {
       }
       let fileName = `${folderName}/${capitulo.titulo}.md`;
       fs.writeFileSync(fileName, content, "utf8");
-      await prisma.capitulo.update({
-        where: {
-          id: capitulo.id,
-        },
-        data: {
-          isDownloaded: true,
-          localPath: fileName,
-        },
-      });
+      await markChapterAsDownloaded(capitulo.id, fileName);
+
       downloadComplete++;
       downloadPending--;
       WsService.broadcast("download:process", {
@@ -248,21 +178,7 @@ export const downloadBook = async (id: string) => {
 };
 
 export const redownloadBook = async (id: string) => {
-  const capitulos = await prisma.capitulo.updateManyAndReturn({
-    where: {
-      bookId: id,
-    },
-    data: {
-      isDownloaded: false,
-    },
-    include: {
-      book: {
-        select: {
-          titulo: true,
-        },
-      },
-    },
-  });
+  const capitulos = await resetCapitulosDownloaded(id);
 
   let downloadPending = capitulos.length;
   let downloadComplete = 0;
@@ -298,15 +214,8 @@ export const redownloadBook = async (id: string) => {
       }
       let fileName = `${folderName}/${capitulo.titulo}.md`;
       fs.writeFileSync(`${folderName}/${capitulo.titulo}.md`, content, "utf8");
-      await prisma.capitulo.update({
-        where: {
-          id: capitulo.id,
-        },
-        data: {
-          isDownloaded: true,
-          localPath: fileName,
-        },
-      });
+      await markChapterAsDownloaded(capitulo.id, fileName);
+
       downloadComplete++;
       downloadPending--;
       WsService.broadcast("download:process", {
@@ -328,19 +237,11 @@ export const redownloadBook = async (id: string) => {
 };
 
 export const readBook = async (id: string) => {
-  const capitulos = await prisma.capitulo.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      id: true,
-      localPath: true,
-    },
-  });
+  const capitulo = await getCapituloById(id);
 
-  if (!capitulos) throw new Error("Capitulo no encontrado");
-  if (!capitulos.localPath) throw new Error("Capitulo no descargado");
-  const content = fs.readFileSync(capitulos.localPath, "utf8");
+  if (!capitulo) throw new Error("Capitulo no encontrado");
+  if (!capitulo.localPath) throw new Error("Capitulo no descargado");
+  const content = fs.readFileSync(capitulo.localPath, "utf8");
 
   return content;
 };

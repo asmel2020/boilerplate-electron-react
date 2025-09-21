@@ -11,7 +11,7 @@ import "./index.css";
 import { toast } from "sonner";
 import { useAuthStore } from "./store/authStore";
 
-import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { /* RouterProvider, */ createRouter } from "@tanstack/react-router";
 
 import { routeTree } from "./routeTree.gen";
 const queryClient = new QueryClient({
@@ -85,7 +85,7 @@ declare module "@tanstack/react-router" {
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <>hola</>
     </QueryClientProvider>
   </React.StrictMode>
 );
