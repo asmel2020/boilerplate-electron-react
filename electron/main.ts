@@ -4,9 +4,8 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { env } from "../src/config/env";
 import registerIpcHandlers from "./ipc";
-import { tiktokConnect } from "./modules/tiktok/tiktok.services";
 
-const require = createRequire(import.meta.url);
+createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // The built directory structure
