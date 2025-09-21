@@ -27,6 +27,7 @@ CREATE TABLE "Capitulo" (
     "capituloNum" INTEGER NOT NULL DEFAULT 0,
     "titulo" TEXT NOT NULL,
     "urlExternal" TEXT NOT NULL,
+    "localPath" TEXT,
     "tituloAttr" TEXT,
     "isDownloaded" BOOLEAN NOT NULL DEFAULT false,
     "bookId" TEXT NOT NULL,

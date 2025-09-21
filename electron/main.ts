@@ -5,7 +5,7 @@ import path from "node:path";
 import { env } from "../src/config/env";
 import registerIpcHandlers from "./ipc";
 import { initPrisma } from "./prisma/prismaClient";
-
+import "./webSocket/server"; // importa el servidor y levanta io
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -34,10 +34,11 @@ let win: BrowserWindow | null;
 async function createWindow() {
   await initPrisma();
   win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+    icon: path.join(process.env.VITE_PUBLIC, "logo.png"), // windows icon
     width: 1080,
     height: 710,
     autoHideMenuBar: true,
+    title: "Kiki Scrapper",
     /* resizable: false, // 🔥 Deshabilita el redimensionado
     fullscreenable: false, // (opcional) evita que se maximice
     maximizable: false, // (opcional) evita botón de maximizar

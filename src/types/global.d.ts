@@ -12,6 +12,7 @@ declare global {
         findAllBooks: () => Promise<
           ({
             capitulos: {
+              id: string;
               urlExternal: string;
               titulo: string;
               capituloNum: number;
@@ -38,9 +39,13 @@ declare global {
         >;
         downloadBook: (id: string) => Promise<void>;
         redownloadBook: (id: string) => Promise<void>;
+        readBook: (id: string) => Promise<string>;
       };
       common: {
         chooseFolder: () => Promise<string | null>;
+        getPath: () => Promise<{
+          path: string | undefined;
+        }>;
       };
     };
   }

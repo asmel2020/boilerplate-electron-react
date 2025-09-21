@@ -5,18 +5,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Book } from "@/types/book";
+import { BookOpen } from "lucide-react";
 
 interface BookCardProps {
   book: Book;
 
   onViewDetails?: (book: Book) => void;
   onDownload?: (book: Book) => void;
+  onReadBook?: (book: Book) => void;
 }
 
 export function BookCard({
   book,
   onDownload = () => {},
   onViewDetails = () => {},
+  onReadBook = () => {},
 }: BookCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -54,9 +57,15 @@ export function BookCard({
           </div>
 
           <div className="flex items-center justify-between">
-            <Badge variant="secondary" className="text-xs">
-              {book.genre}
-            </Badge>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => onReadBook(book)}
+              className="text-xs px-3 flex items-center gap-1"
+            >
+              <BookOpen className="w-3 h-3" />
+              Leer
+            </Button>
             <Button
               variant="outline"
               size="sm"

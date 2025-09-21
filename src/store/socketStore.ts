@@ -36,7 +36,7 @@ export const useSocketStore = create<SocketState>((set, get) => ({
   messageId: null,
   connect: () => {
     // Initialize socket connection
-    const socket = io(process.env.EXPO_PUBLIC_URL_BASE, {
+    const socket = io("http://localhost:3000", {
       transports: ["websocket"],
       autoConnect: false,
       extraHeaders: {

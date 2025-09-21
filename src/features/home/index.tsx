@@ -4,19 +4,26 @@ import { BookDetailModal } from "./components/book-detail-modal";
 import { EmptyState } from "./components/empty-state";
 import { LibraryHeader } from "./components/library-header";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Folder, Plus } from "lucide-react";
 import { AddBookDialog } from "./components/add-book-dialog";
 import { useFindAllBook } from "@/hook/find-all-book";
 import { Book } from "@/types/book";
 import { DownloadBookDialog } from "./components/download-book-dialog";
+import { BookReader } from "./components/book-reader";
+import { useGetPath } from "@/hook/get-path";
+import Loading from "@/components/loading";
+import { AddPathDialog } from "./components/add-path";
 
 export function HomePage() {
+  const { getPathQuery } = useGetPath();
+  const { findAllBookQuery } = useFindAllBook();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddBookDialogOpen, setIsAddBookDialogOpen] = useState(false);
   const [isDownloadBookDialogOpen, setIsDownloadBookDialogOpen] =
     useState(false);
+  const [isReaderOpen, setIsReaderOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const { findAllBookQuery } = useFindAllBook();
+
   const handleViewDetails = (book: Book) => {
     setSelectedBook(book);
     setIsModalOpen(true);
@@ -26,11 +33,27 @@ export function HomePage() {
     setIsDownloadBookDialogOpen(true);
     /*   await window.api.book.downloadBook(id); */
   };
+  const handleReadBook = (book: Book) => {
+    setSelectedBook(book);
+    setIsReaderOpen(true);
+  };
+  if (!getPathQuery.data || !findAllBookQuery.data) return <Loading />;
+
+  if (!getPathQuery.data.path) {
+    return <AddPathDialog isOpen={true} onClose={() => {}} />;
+  }
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 w-full">
       <div className="max-w-7xl mx-auto p-6">
         <LibraryHeader totalBooks={1} favoriteBooks={2} trendingBooks={3} />
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-end mb-6 gap-2">
+          <Button
+            onClick={() => window.api.common.chooseFolder()}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <Folder className="w-4 h-4" />
+            Cambiar Ruta
+          </Button>
           <Button
             onClick={() => setIsAddBookDialogOpen(true)}
             className="flex items-center gap-2 cursor-pointer"
@@ -39,15 +62,7 @@ export function HomePage() {
             Agregar Libro
           </Button>
         </div>
-        <div className="flex justify-end mb-6">
-          <Button
-            onClick={() => window.api.common.chooseFolder()}
-            className="flex items-center gap-2 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            Add
-          </Button>
-        </div>
+        <div className="flex justify-end mb-6"></div>
         {!!findAllBookQuery.data && findAllBookQuery.data.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {findAllBookQuery.data.map((book) => (
@@ -65,34 +80,40 @@ export function HomePage() {
                 }}
                 onViewDetails={handleViewDetails}
                 onDownload={handleDownload}
+                onReadBook={handleReadBook}
               />
             ))}
           </div>
         ) : (
           <EmptyState hasSearchTerm={false} />
         )}
-
-        <BookDetailModal
-          book={selectedBook}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        />
-        <AddBookDialog
-          isOpen={isAddBookDialogOpen}
-          onClose={() => setIsAddBookDialogOpen(false)}
-          onAddBook={async () => {
-            await findAllBookQuery.refetch();
-          }}
-        />
-        <DownloadBookDialog
-          book={selectedBook}
-          isOpen={isDownloadBookDialogOpen}
-          onClose={() => setIsDownloadBookDialogOpen(false)}
-          onAddBook={async () => {
-            await findAllBookQuery.refetch();
-          }}
-        />
       </div>
+      <BookDetailModal
+        book={selectedBook}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
+      <AddBookDialog
+        isOpen={isAddBookDialogOpen}
+        onClose={() => setIsAddBookDialogOpen(false)}
+        onAddBook={async () => {
+          await findAllBookQuery.refetch();
+        }}
+      />
+      <DownloadBookDialog
+        book={selectedBook}
+        isOpen={isDownloadBookDialogOpen}
+        onClose={() => setIsDownloadBookDialogOpen(false)}
+        onAddBook={async () => {
+          await findAllBookQuery.refetch();
+        }}
+      />
+
+      <BookReader
+        book={selectedBook}
+        isOpen={isReaderOpen}
+        onClose={() => setIsReaderOpen(false)}
+      />
     </div>
   );
 }

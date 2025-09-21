@@ -6,11 +6,14 @@ export interface Book {
   description: string;
   coverUrl: string;
   caps: number;
-  capitulos: {
-    urlExternal: string;
-    titulo: string;
-    capituloNum: number;
-    tituloAttr: string | null;
-    isDownloaded: boolean;
-  }[];
+  capitulos: Cap[];
+}
+
+export interface Cap {
+  id: string;
+  urlExternal: string;
+  titulo: string;
+  capituloNum: number;
+  tituloAttr: string | null;
+  isDownloaded: boolean;
 }

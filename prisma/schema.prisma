@@ -43,6 +43,7 @@ model Capitulo {
   capituloNum  Int      @default(0)
   titulo       String
   urlExternal  String   @unique
+  localPath    String?
   tituloAttr   String?
   isDownloaded Boolean  @default(false)
   bookId       String

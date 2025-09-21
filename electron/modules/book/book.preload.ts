@@ -5,4 +5,5 @@ export const BookPreload = {
   findAllBooks: () => ipcRenderer.invoke("book:findAll"),
   downloadBook: (id: string) => ipcRenderer.invoke("book:download", id),
   redownloadBook: (id: string) => ipcRenderer.invoke("book:redownload", id),
+  readBook: (id: string) => ipcRenderer.invoke("book:read", id),
 };

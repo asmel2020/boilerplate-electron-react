@@ -1,5 +1,5 @@
 import { BrowserWindow, dialog, IpcMain } from "electron";
-import { savePath } from "../../utils/storage";
+import { getPath, savePath } from "../../utils/storage";
 
 export const CommonIpcHandlers = (
   ipcMain: IpcMain,
@@ -16,5 +16,11 @@ export const CommonIpcHandlers = (
 
     savePath(filePaths[0]);
     return filePaths[0];
+  });
+
+  ipcMain.handle("file:getPath", async () => {
+    return {
+      path: getPath(),
+    };
   });
 };

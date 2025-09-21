@@ -4,6 +4,7 @@ import {
   findAllBook,
   downloadBook,
   redownloadBook,
+  readBook,
 } from "./book.services";
 
 export const BookIpcHandlers = (ipcMain: IpcMain, _: BrowserWindow | null) => {
@@ -20,5 +21,9 @@ export const BookIpcHandlers = (ipcMain: IpcMain, _: BrowserWindow | null) => {
   });
   ipcMain.handle("book:redownload", async (_, id: string) => {
     return redownloadBook(id);
+  });
+
+  ipcMain.handle("book:read", async (_, id: string) => {
+    return readBook(id);
   });
 };
